@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Cardano.CLI.Shelley.Parsers
   ( -- * CLI command parser
@@ -559,11 +561,11 @@ pNodeCmd =
 
     pKeyHashVRF :: Parser NodeCmd
     pKeyHashVRF =
-      NodeKeyHashVRF <$> pVerificationKeyFile Input <*> pMaybeOutputFile
+      NodeKeyHashVRF <$> pVerificationKeyOrFile AsVrfKey <*> pMaybeOutputFile
 
     pNewCounter :: Parser NodeCmd
     pNewCounter =
-      NodeNewCounter <$> pColdVerificationKeyFile
+      NodeNewCounter <$> pColdVerificationKeyOrFile
                      <*> pCounterValue
                      <*> pOperatorCertIssueCounterFile
 
@@ -577,7 +579,7 @@ pNodeCmd =
 
     pIssueOpCert :: Parser NodeCmd
     pIssueOpCert =
-      NodeIssueOpCert <$> pKESVerificationKeyFile
+      NodeIssueOpCert <$> pKesVerificationKeyOrFile
                       <*> pColdSigningKeyFile
                       <*> pOperatorCertIssueCounterFile
                       <*> pKesPeriod
@@ -1165,6 +1167,12 @@ pOutputFile =
       <> Opt.completer (Opt.bashCompleter "file")
       )
 
+pColdVerificationKeyOrFile :: Parser ColdVerificationKeyOrFile
+pColdVerificationKeyOrFile =
+  ColdStakePoolVerificationKey <$> pStakePoolVerificationKey
+    <|> ColdGenesisDelegateVerificationKey <$> pGenesisDelegateVerificationKey
+    <|> ColdVerificationKeyFile <$> pColdVerificationKeyFile
+
 pColdVerificationKeyFile :: Parser VerificationKeyFile
 pColdVerificationKeyFile =
   VerificationKeyFile <$>
@@ -1180,6 +1188,41 @@ pColdVerificationKeyFile =
         <> Opt.internal
         )
     )
+
+pVerificationKey
+  :: forall keyrole.
+     ( HasTextEnvelope (VerificationKey keyrole)
+     , SerialiseAsBech32 (VerificationKey keyrole)
+     )
+  => AsType keyrole
+  -> Parser (VerificationKey keyrole)
+pVerificationKey asType =
+    Opt.option
+      (Opt.eitherReader deserialiseFromBech32OrHex)
+        (  Opt.long "verification-key"
+        <> Opt.metavar "STRING"
+        <> Opt.help "Verification key (Bech32 or hex-encoded)."
+        )
+  where
+    keyFormats :: NonEmpty KeyFormat
+    keyFormats = NE.fromList [KeyFormatBech32, KeyFormatHex]
+
+    deserialiseFromBech32OrHex
+      :: String
+      -> Either String (VerificationKey keyrole)
+    deserialiseFromBech32OrHex str =
+      first (Text.unpack . renderKeyDecodeError) $
+        deserialiseKey (AsVerificationKey asType) keyFormats (BSC.pack str)
+
+pVerificationKeyOrFile
+  :: ( HasTextEnvelope (VerificationKey keyrole)
+     , SerialiseAsBech32 (VerificationKey keyrole)
+     )
+  => AsType keyrole
+  -> Parser (VerificationKeyOrFile keyrole)
+pVerificationKeyOrFile asType =
+  VerificationKeyValue <$> pVerificationKey asType
+    <|> VerificationKeyFilePath <$> pVerificationKeyFile Input
 
 pVerificationKeyFile :: FileDirection -> Parser VerificationKeyFile
 pVerificationKeyFile fdir =
@@ -1305,8 +1348,42 @@ pGenesisDelegateVerificationKeyOrHashOrFile =
   VerificationKeyOrFile <$> pGenesisDelegateVerificationKeyOrFile
     <|> VerificationKeyHash <$> pGenesisDelegateVerificationKeyHash
 
-pKESVerificationKeyFile :: Parser VerificationKeyFile
-pKESVerificationKeyFile =
+pKesVerificationKeyOrFile :: Parser (VerificationKeyOrFile KesKey)
+pKesVerificationKeyOrFile =
+  VerificationKeyValue <$> pKesVerificationKey
+    <|> VerificationKeyFilePath <$> pKesVerificationKeyFile
+
+pKesVerificationKey :: Parser (VerificationKey KesKey)
+pKesVerificationKey =
+    Opt.option
+      (Opt.eitherReader deserialiseVerKey)
+        (  Opt.long "kes-verification-key"
+        <> Opt.metavar "STRING"
+        <> Opt.help "A Bech32 or hex-encoded hot KES verification key."
+        )
+  where
+    asType :: AsType (VerificationKey KesKey)
+    asType = AsVerificationKey AsKesKey
+
+    deserialiseVerKey :: String -> Either String (VerificationKey KesKey)
+    deserialiseVerKey str =
+      case deserialiseFromBech32 asType (Text.pack str) of
+        Right res -> Right res
+
+        -- The input was valid Bech32, but some other error occurred.
+        Left err@(Bech32UnexpectedPrefix _ _) -> Left (displayError err)
+        Left err@(Bech32DataPartToBytesError _) -> Left (displayError err)
+        Left err@(Bech32DeserialiseFromBytesError _) -> Left (displayError err)
+        Left err@(Bech32WrongPrefix _ _) -> Left (displayError err)
+
+        -- The input was not valid Bech32. Attempt to deserialize it as hex.
+        Left (Bech32DecodingError _) ->
+          case deserialiseFromRawBytesHex asType (BSC.pack str) of
+            Just res' -> Right res'
+            Nothing -> Left "Invalid stake pool verification key."
+
+pKesVerificationKeyFile :: Parser VerificationKeyFile
+pKesVerificationKeyFile =
   VerificationKeyFile <$>
     ( Opt.strOption
         (  Opt.long "kes-verification-key-file"
