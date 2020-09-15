@@ -231,9 +231,9 @@ renderNodeCmd cmd = do
 
 data PoolCmd
   = PoolRegistrationCert
-      VerificationKeyFile
+      (VerificationKeyOrFile StakePoolKey)
       -- ^ Stake pool verification key.
-      VerificationKeyFile
+      (VerificationKeyOrFile VrfKey)
       -- ^ VRF Verification key.
       Lovelace
       -- ^ Pool pledge.
@@ -241,9 +241,9 @@ data PoolCmd
       -- ^ Pool cost.
       Rational
       -- ^ Pool margin.
-      VerificationKeyFile
+      (VerificationKeyOrFile StakeKey)
       -- ^ Reward account verification staking key.
-      [VerificationKeyFile]
+      [VerificationKeyOrFile StakeKey]
       -- ^ Pool owner verification staking key(s).
       [StakePoolRelay]
       -- ^ Stake pool relays.
@@ -252,12 +252,12 @@ data PoolCmd
       NetworkId
       OutputFile
   | PoolRetirementCert
-      VerificationKeyFile
+      (VerificationKeyOrFile StakePoolKey)
       -- ^ Stake pool verification key.
       EpochNo
       -- ^ Epoch in which to retire the stake pool.
       OutputFile
-  | PoolGetId VerificationKeyFile OutputFormat
+  | PoolGetId (VerificationKeyOrFile StakePoolKey) OutputFormat
   | PoolMetaDataHash PoolMetaDataFile (Maybe OutputFile)
   deriving (Eq, Show)
 
