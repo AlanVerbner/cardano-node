@@ -305,7 +305,8 @@ module Cardano.Api.Typed (
     toByronProtocolMagicId,
     toByronRequiresNetworkMagic,
     toShelleyNetwork,
-    toNetworkMagic,
+    toShelleyStakeAddr,
+    toNetworkMagic
   ) where
 
 import           Prelude
