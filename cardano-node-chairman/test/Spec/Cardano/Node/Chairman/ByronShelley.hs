@@ -1,12 +1,10 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
 
 {-# OPTIONS_GHC -Wno-unused-imports -Wno-unused-local-binds -Wno-unused-matches #-}
 
-module Test.Cardano.Node.Chairman.ByronShelley
-  ( tests
+module Spec.Cardano.Node.Chairman.ByronShelley
+  ( hprop_chairman
   ) where
 
 import           Control.Monad
@@ -58,14 +56,14 @@ import qualified System.Info as OS
 import qualified System.IO as IO
 import qualified System.Process as IO
 import qualified System.Random as IO
-import qualified Test.Cardano.Process as H
+import qualified Test.Process as H
 
 {- HLINT ignore "Reduce duplication" -}
 {- HLINT ignore "Redundant <&>" -}
 {- HLINT ignore "Redundant flip" -}
 
-prop_chairman :: Property
-prop_chairman = H.propertyOnce . H.workspace "chairman" $ \tempAbsPath -> do
+hprop_chairman :: Property
+hprop_chairman = H.propertyOnce . H.workspace "chairman" $ \tempAbsPath -> do
   void $ H.note OS.os
   tempBaseAbsPath <- H.noteShow $ FP.takeDirectory tempAbsPath
   tempRelPath <- H.noteShow $ FP.makeRelative tempBaseAbsPath tempAbsPath
@@ -665,6 +663,3 @@ prop_chairman = H.propertyOnce . H.workspace "chairman" $ \tempAbsPath -> do
           H.cat $ logDir </> node <> ".stdout.log"
           H.cat $ logDir </> node <> ".stderr.log"
         H.failure
-
-tests :: IO Bool
-tests = H.checkParallel $$discover
