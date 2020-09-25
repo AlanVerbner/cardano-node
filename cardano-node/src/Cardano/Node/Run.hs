@@ -54,26 +54,7 @@ import           Cardano.Node.Configuration.POM (NodeConfiguration (..),
 import           Cardano.Node.Types
 import           Cardano.Tracing.Config (TraceOptions (..), TraceSelection (..))
 
-import           Ouroboros.Consensus.Block (BlockProtocol)
-import qualified Ouroboros.Consensus.Cardano as Consensus
-import qualified Ouroboros.Consensus.Config as Consensus
-import           Ouroboros.Consensus.Config.SupportsNode (ConfigSupportsNode (..))
-import           Ouroboros.Consensus.Fragment.InFuture (defaultClockSkew)
-import           Ouroboros.Consensus.Node (DiffusionArguments (..), DiffusionTracers (..),
-                     DnsSubscriptionTarget (..), IPSubscriptionTarget (..), NodeArgs (..),
-                     NodeKernel, RunNode (..), RunNodeArgs (..))
-import qualified Ouroboros.Consensus.Node as Node (getChainDB, run)
-import           Ouroboros.Consensus.Node.NetworkProtocolVersion
-import           Ouroboros.Consensus.Node.ProtocolInfo
-import           Ouroboros.Consensus.Util.Orphans ()
-import           Ouroboros.Network.BlockFetch (BlockFetchConfiguration (..))
-import           Ouroboros.Network.Magic (NetworkMagic (..))
-import           Ouroboros.Network.NodeToClient (LocalConnectionId)
-import           Ouroboros.Network.NodeToNode (AcceptedConnectionsLimit (..), RemoteConnectionId)
-
-import qualified Ouroboros.Consensus.Storage.ChainDB as ChainDB
-import           Ouroboros.Consensus.Storage.ImmutableDB (ValidationPolicy (..))
-import           Ouroboros.Consensus.Storage.VolatileDB (BlockValidationPolicy (..))
+import           Cardano.Api.Byron
 
 import           Cardano.Node.Configuration.Socket (SocketOrSocketInfo (..),
                      gatherConfiguredSockets)
@@ -118,7 +99,7 @@ runNode cmdPc = do
 
     eitherSomeProtocol <- runExceptT $ mkConsensusProtocol nc
 
-    SomeConsensusProtocol (p :: Consensus.Protocol IO blk (BlockProtocol blk)) <-
+    SomeConsensusProtocol (p :: Protocol IO blk (BlockProtocol blk)) <-
       case eitherSomeProtocol of
         Left err -> putTextLn (renderProtocolInstantiationError err) >> exitFailure
         Right (SomeConsensusProtocol p) -> pure $ SomeConsensusProtocol p
@@ -249,7 +230,7 @@ handlePeersListSimple tr nodeKern = forever $ do
 
 handleSimpleNode
   :: forall blk. RunNode blk
-  => Consensus.Protocol IO blk (BlockProtocol blk)
+  => Protocol IO blk (BlockProtocol blk)
   -> Trace IO Text
   -> Tracers RemoteConnectionId LocalConnectionId blk
   -> NodeConfiguration
@@ -260,7 +241,7 @@ handleSimpleNode
   -> IO ()
 handleSimpleNode p trace nodeTracers nc onKernel = do
 
-  let pInfo@ProtocolInfo{ pInfoConfig = cfg } = Consensus.protocolInfo p
+  let pInfo@ProtocolInfo{ pInfoConfig = cfg } = protocolInfo p
       tracer = toLogObject trace
 
   createTracers nc trace tracer cfg
@@ -288,7 +269,7 @@ handleSimpleNode p trace nodeTracers nc onKernel = do
       (dnsProducerAddrs, ipProducerAddrs) = producerAddresses nt
 
   withShutdownHandling nc trace $ \sfds ->
-   Node.run
+   run
      RunNodeArgs {
        rnTraceConsensus       = consensusTracers nodeTracers,
        rnTraceNTN             = nodeToNodeTracers nodeTracers,
@@ -296,7 +277,7 @@ handleSimpleNode p trace nodeTracers nc onKernel = do
        rnTraceDB              = chainDBTracer nodeTracers,
        rnTraceDiffusion       = diffusionTracers,
        rnDiffusionArguments   = diffusionArguments,
-       rnNetworkMagic         = getNetworkMagic (Consensus.configBlock cfg),
+       rnNetworkMagic         = getNetworkMagic (configBlock cfg),
        rnDatabasePath         = dbPath,
        rnProtocolInfo         = pInfo,
        rnCustomiseChainDbArgs = customiseChainDbArgs $ ncValidateDB nc,
@@ -306,7 +287,7 @@ handleSimpleNode p trace nodeTracers nc onKernel = do
        rnNodeToClientVersions = supportedNodeToClientVersions (Proxy @blk),
        rnNodeKernelHook       = \registry nodeKernel -> do
          maybeSpawnOnSlotSyncedShutdownHandler nc sfds trace registry
-           (Node.getChainDB nodeKernel)
+           (getChainDB nodeKernel)
          onKernel nodeKernel,
        rnMaxClockSkew         = defaultClockSkew
     }
@@ -325,13 +306,13 @@ handleSimpleNode p trace nodeTracers nc onKernel = do
       }
 
   customiseChainDbArgs :: Bool
-                       -> ChainDB.ChainDbArgs Identity IO blk
-                       -> ChainDB.ChainDbArgs Identity IO blk
+                       -> ChainDbArgs Identity IO blk
+                       -> ChainDbArgs Identity IO blk
   customiseChainDbArgs runValid args
     | runValid
     = args
-      { ChainDB.cdbImmutableDbValidation = ValidateAllChunks
-      , ChainDB.cdbVolatileDbValidation = ValidateAll
+      { cdbImmutableDbValidation = ValidateAllChunks
+      , cdbVolatileDbValidation = ValidateAll
       }
     | otherwise
     = args
@@ -355,7 +336,7 @@ handleSimpleNode p trace nodeTracers nc onKernel = do
     :: NodeConfiguration
     -> Trace IO Text
     -> Tracer IO Text
-    -> Consensus.TopLevelConfig blk
+    -> TopLevelConfig blk
     -> IO ()
   createTracers ncf@NodeConfiguration{ncNodeAddr, ncValidateDB}
                 tr tracer cfg = do
@@ -368,7 +349,7 @@ handleSimpleNode p trace nodeTracers nc onKernel = do
          let (dnsProducerAddrs, ipProducerAddrs) = producerAddresses nt
 
          traceWith tracer $
-           "System started at " <> show (getSystemStart $ Consensus.configBlock cfg)
+           "System started at " <> show (getSystemStart $ configBlock cfg)
 
          traceWith tracer $ unlines
            [ ""
@@ -385,7 +366,7 @@ handleSimpleNode p trace nodeTracers nc onKernel = do
              vTr = appendName "version" tr
              cTr = appendName "commit"  tr
          traceNamedObject rTr (meta, LogMessage . Text.pack . protocolName $ ncProtocol nc)
-         traceNamedObject nTr (meta, LogMessage ("NetworkMagic " <> show (unNetworkMagic . getNetworkMagic $ Consensus.configBlock cfg)))
+         traceNamedObject nTr (meta, LogMessage ("NetworkMagic " <> show (unNetworkMagic . getNetworkMagic $ configBlock cfg)))
          traceNamedObject vTr (meta, LogMessage . pack . showVersion $ version)
          traceNamedObject cTr (meta, LogMessage gitRev)
 

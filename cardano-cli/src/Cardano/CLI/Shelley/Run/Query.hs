@@ -34,7 +34,7 @@ import           Numeric (showEFloat)
 import           Control.Monad.Trans.Except (ExceptT)
 import           Control.Monad.Trans.Except.Extra (firstExceptT, handleIOExceptT, newExceptT)
 
-import           Cardano.Api.Shelley
+import           Cardano.Api.Shelley hiding (StakeCredential, TxId, TxIn, TxOut)
 
 import           Cardano.CLI.Environment (EnvSocketError, readEnvSocketPath, renderEnvSocketError)
 import           Cardano.CLI.Helpers (HelpersError, pPrintCBOR, renderHelpersError)
@@ -45,29 +45,8 @@ import           Cardano.CLI.Types
 import           Cardano.Binary (decodeFull)
 import           Cardano.Crypto.Hash (hashToBytesAsHex)
 
-import           Ouroboros.Consensus.Cardano.Block (Either (..), EraMismatch (..), Query (..))
-import           Ouroboros.Consensus.HardFork.Combinator.Degenerate (Either (DegenQueryResult),
-                     Query (DegenQuery))
-import           Ouroboros.Consensus.Shelley.Protocol.Crypto (StandardShelley)
-import           Ouroboros.Network.Block (Serialised (..), getTipPoint)
-
-
-import qualified Shelley.Spec.Ledger.Address as Ledger
-import           Shelley.Spec.Ledger.Coin (Coin (..))
-import qualified Shelley.Spec.Ledger.Credential as Ledger
-import           Shelley.Spec.Ledger.Delegation.Certificates (IndividualPoolStake (..),
-                     PoolDistr (..))
-import qualified Shelley.Spec.Ledger.Keys as Ledger
-import           Shelley.Spec.Ledger.LedgerState (EpochState)
-import qualified Shelley.Spec.Ledger.LedgerState as Ledger
-import           Shelley.Spec.Ledger.PParams (PParams)
-import qualified Shelley.Spec.Ledger.TxBody as Ledger (TxId (..), TxIn (..), TxOut (..))
-import qualified Shelley.Spec.Ledger.UTxO as Ledger (UTxO (..))
-
-import           Ouroboros.Consensus.Shelley.Ledger
-
-import           Ouroboros.Network.Protocol.LocalStateQuery.Type as LocalStateQuery
-                     (AcquireFailure (..))
+import           Shelley.Spec.Ledger.Credential (StakeCredential)
+import           Shelley.Spec.Ledger.TxBody (TxId (..), TxIn (..), TxOut (..))
 
 
 data ShelleyQueryCmdError
@@ -194,7 +173,7 @@ runQueryStakeAddressInfo protocol addr network mOutFile = do
 
 -- | An error that can occur while querying a node's local state.
 data ShelleyQueryCmdLocalStateQueryError
-  = AcquireFailureError !LocalStateQuery.AcquireFailure
+  = AcquireFailureError !AcquireFailure
   | EraMismatchError !EraMismatch
   -- ^ A query from a certain era was applied to a ledger from a different
   -- era.
@@ -230,15 +209,15 @@ writeLedgerState mOutFile lstate =
       handleIOExceptT (ShelleyQueryCmdWriteFileError . FileIOError fpath)
         $ LBS.writeFile fpath (encodePretty lstate)
 
-writeFilteredUTxOs :: Maybe OutputFile -> Ledger.UTxO StandardShelley -> ExceptT ShelleyQueryCmdError IO ()
+writeFilteredUTxOs :: Maybe OutputFile -> UTxO StandardShelley -> ExceptT ShelleyQueryCmdError IO ()
 writeFilteredUTxOs mOutFile utxo =
     case mOutFile of
       Nothing -> liftIO $ printFilteredUTxOs utxo
       Just (OutputFile fpath) ->
         handleIOExceptT (ShelleyQueryCmdWriteFileError . FileIOError fpath) $ LBS.writeFile fpath (encodePretty utxo)
 
-printFilteredUTxOs :: Ledger.UTxO StandardShelley -> IO ()
-printFilteredUTxOs (Ledger.UTxO utxo) = do
+printFilteredUTxOs :: UTxO StandardShelley -> IO ()
+printFilteredUTxOs (UTxO utxo) = do
     Text.putStrLn title
     putStrLn $ replicate (Text.length title + 2) '-'
     mapM_ printUtxo $ Map.toList utxo
@@ -247,8 +226,8 @@ printFilteredUTxOs (Ledger.UTxO utxo) = do
     title =
       "                           TxHash                                 TxIx        Lovelace"
 
-    printUtxo :: (Ledger.TxIn StandardShelley, Ledger.TxOut StandardShelley) -> IO ()
-    printUtxo (Ledger.TxIn (Ledger.TxId txhash) txin , Ledger.TxOut _ (Coin coin)) =
+    printUtxo :: (TxIn StandardShelley, TxOut StandardShelley) -> IO ()
+    printUtxo (TxIn (TxId txhash) txin , TxOut _ (Coin coin)) =
       Text.putStrLn $
         mconcat
           [ Text.decodeLatin1 (hashToBytesAsHex txhash)
@@ -323,7 +302,7 @@ printStakeDistribution (PoolDistr stakeDist) = do
 queryUTxOFromLocalState
   :: QueryFilter
   -> LocalNodeConnectInfo mode block
-  -> ExceptT ShelleyQueryCmdLocalStateQueryError IO (Ledger.UTxO StandardShelley)
+  -> ExceptT ShelleyQueryCmdLocalStateQueryError IO (UTxO StandardShelley)
 queryUTxOFromLocalState qFilter connectInfo@LocalNodeConnectInfo{localNodeConsensusMode} =
   case localNodeConsensusMode of
     ByronMode{} -> throwError ByronProtocolNotSupportedError
@@ -354,13 +333,13 @@ queryUTxOFromLocalState qFilter connectInfo@LocalNodeConnectInfo{localNodeConsen
     -- But alternatively, the API can also be extended to cover the queries
     -- properly using the API types.
 
-    toShelleyAddrs :: Set (Address Shelley) -> Set (Ledger.Addr StandardShelley)
+    toShelleyAddrs :: Set (Address Shelley) -> Set (Addr StandardShelley)
     toShelleyAddrs = Set.map toShelleyAddr
 
-    toShelleyAddr :: Address era -> Ledger.Addr StandardShelley
-    toShelleyAddr (ByronAddress addr)        = Ledger.AddrBootstrap
-                                                 (Ledger.BootstrapAddress addr)
-    toShelleyAddr (ShelleyAddress nw pc scr) = Ledger.Addr nw pc scr
+    toShelleyAddr :: Address era -> Addr StandardShelley
+    toShelleyAddr (ByronAddress addr)        = AddrBootstrap
+                                                 (BootstrapAddress addr)
+    toShelleyAddr (ShelleyAddress nw pc scr) = Addr nw pc scr
 
 
 -- | A mapping of Shelley reward accounts to both the stake pool that they
@@ -368,7 +347,7 @@ queryUTxOFromLocalState qFilter connectInfo@LocalNodeConnectInfo{localNodeConsen
 data DelegationsAndRewards
   = DelegationsAndRewards
       !NetworkId
-      !(Map (Ledger.Credential Ledger.Staking StandardShelley)
+      !(Map (Credential Staking StandardShelley)
             (Maybe (Hash StakePoolKey), Coin))
 
 instance ToJSON DelegationsAndRewards where
@@ -377,7 +356,7 @@ instance ToJSON DelegationsAndRewards where
         . map delegAndRwdToJson $ Map.toList delegsAndRwds
     where
       delegAndRwdToJson
-        :: (Ledger.Credential 'Ledger.Staking StandardShelley, (Maybe (Hash StakePoolKey), Coin))
+        :: (Credential 'Staking StandardShelley, (Maybe (Hash StakePoolKey), Coin))
         -> Aeson.Value
       delegAndRwdToJson (k, (d, r)) =
         Aeson.object
@@ -386,7 +365,7 @@ instance ToJSON DelegationsAndRewards where
           , "rewardAccountBalance" .= r
           ]
 
-      renderAddress :: Ledger.Credential Ledger.Staking StandardShelley -> Text
+      renderAddress :: Credential Staking StandardShelley -> Text
       renderAddress = serialiseAddress . StakeAddress (toShelleyNetwork nw)
 
 
@@ -464,7 +443,7 @@ queryStakeDistributionFromLocalState connectInfo@LocalNodeConnectInfo{
 queryLocalLedgerState
   :: LocalNodeConnectInfo mode blk
   -> ExceptT ShelleyQueryCmdLocalStateQueryError IO
-             (Either LByteString (Ledger.EpochState StandardShelley))
+             (Either LByteString (EpochState StandardShelley))
 queryLocalLedgerState connectInfo@LocalNodeConnectInfo{localNodeConsensusMode} =
   case localNodeConsensusMode of
     ByronMode{} -> throwError ByronProtocolNotSupportedError
@@ -541,9 +520,9 @@ queryDelegationsAndRewardsFromLocalState stakeaddrs
         QueryResultSuccess drs -> return $ uncurry toDelegsAndRwds drs
   where
     toDelegsAndRwds
-      :: Map (Ledger.Credential Ledger.Staking StandardShelley)
-             (Ledger.KeyHash Ledger.StakePool StandardShelley)
-      -> Ledger.RewardAccounts StandardShelley
+      :: Map (Credential Staking StandardShelley)
+             (KeyHash StakePool StandardShelley)
+      -> RewardAccounts StandardShelley
       -> DelegationsAndRewards
     toDelegsAndRwds delegs rwdAcnts =
       DelegationsAndRewards localNodeNetworkId $
@@ -552,5 +531,5 @@ queryDelegationsAndRewardsFromLocalState stakeaddrs
           rwdAcnts
 
     toShelleyStakeCredentials :: Set StakeAddress
-                              -> Set (Ledger.StakeCredential StandardShelley)
+                              -> Set (StakeCredential StandardShelley)
     toShelleyStakeCredentials = Set.map (\(StakeAddress _ cred) -> cred)

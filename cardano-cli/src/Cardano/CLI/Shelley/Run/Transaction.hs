@@ -27,20 +27,14 @@ import           Control.Monad.Trans.Except.Extra (firstExceptT, handleIOExceptT
 --TODO: do this nicely via the API too:
 import qualified Cardano.Binary as CBOR
 
-import qualified Shelley.Spec.Ledger.PParams as Shelley
-
-import           Ouroboros.Consensus.Byron.Ledger (ByronBlock)
-import           Ouroboros.Consensus.Cardano.Block (EraMismatch (..),
-                     HardForkApplyTxErr (ApplyTxErrByron, ApplyTxErrShelley, ApplyTxErrWrongEra))
-import           Ouroboros.Consensus.Ledger.SupportsMempool (ApplyTxErr)
-import           Ouroboros.Consensus.Shelley.Ledger (ShelleyBlock)
-import           Ouroboros.Consensus.Shelley.Protocol.Crypto (StandardShelley)
+import           Shelley.Spec.Ledger.PParams
 
 import           Cardano.CLI.Environment (EnvSocketError, readEnvSocketPath, renderEnvSocketError)
 import           Cardano.CLI.Shelley.Key (SigningKeyDecodeError (..), readSigningKeyFileAnyOf)
 import           Cardano.CLI.Shelley.Parsers
 import           Cardano.CLI.Types
 
+import           Cardano.Api.Byron
 import           Cardano.Api.Shelley
 import qualified Cardano.Api.Shelley as Api
 
@@ -273,8 +267,8 @@ runTxCalculateMinFee (TxBodyFile txbodyFile) nw pParamsFile
     let tx = Api.makeSignedTransaction [] txbody
         Api.Lovelace fee = Api.estimateTransactionFee
                              (fromMaybe Api.Mainnet nw)
-                             (Shelley._minfeeB pparams) --TODO: do this better
-                             (Shelley._minfeeA pparams)
+                             (_minfeeB pparams) --TODO: do this better
+                             (_minfeeA pparams)
                              tx
                              nInputs nOutputs
                              nByronKeyWitnesses nShelleyKeyWitnesses
@@ -284,7 +278,7 @@ runTxCalculateMinFee (TxBodyFile txbodyFile) nw pParamsFile
 --TODO: eliminate this and get only the necessary params, and get them in a more
 -- helpful way rather than requiring them as a local file.
 readProtocolParameters :: ProtocolParamsFile
-                       -> ExceptT ShelleyTxCmdError IO (Shelley.PParams StandardShelley)
+                       -> ExceptT ShelleyTxCmdError IO (PParams StandardShelley)
 readProtocolParameters (ProtocolParamsFile fpath) = do
   pparams <- handleIOExceptT (ShelleyTxCmdReadFileError . FileIOError fpath) $ LBS.readFile fpath
   firstExceptT (ShelleyTxCmdAesonDecodeProtocolParamsError fpath . Text.pack) . hoistEither $

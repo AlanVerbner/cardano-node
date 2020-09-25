@@ -25,10 +25,10 @@ import qualified Data.Text as Text
 import           Network.Socket (PortNumber, SockAddr (..))
 import           Text.Read (readMaybe)
 
+import           Cardano.Api.Shelley
 import           Cardano.Node.Configuration.POM (NodeConfiguration (..))
 import           Cardano.Node.Types
 
-import           Ouroboros.Consensus.Util.Condense (Condense (..))
 
 
 newtype TopologyError

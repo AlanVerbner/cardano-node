@@ -263,15 +263,12 @@ module Cardano.API (
 
     -- To sort
     -- Generic
-    BlockNo(..),
-    EpochNo(..),
+    EpochNo,
     Era,
     HasTxId(..),
-    HeaderHash,
     OneEraHash(..),
     SlotNumber(..),
     SystemStart(..),
-    Tip(..),
     condense,
     -- Type constructors
     Shelley,
@@ -284,8 +281,8 @@ import           Cardano.Api.LocalChainSync (getLocalTip)
 import           Cardano.Api.Typed
 import           Cardano.Chain.Slotting (SlotNumber (..))
 import           Cardano.Ledger.Era (Era)
+import           Cardano.Slotting.Slot (EpochNo)
 import           Ouroboros.Consensus.BlockchainTime (SystemStart (..))
 import           Ouroboros.Consensus.HardFork.Combinator (OneEraHash (getOneEraHash))
 import           Ouroboros.Consensus.Ledger.SupportsMempool (HasTxId (txId))
 import           Ouroboros.Consensus.Util.Condense (condense)
-import           Ouroboros.Network.Block (BlockNo (..), HeaderHash, Tip (..))

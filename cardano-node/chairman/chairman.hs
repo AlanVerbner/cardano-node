@@ -12,12 +12,7 @@ import           Control.Tracer (stdoutTracer)
 import           Options.Applicative
 import qualified Options.Applicative as Opt
 
-import           Cardano.Chain.Slotting (EpochSlots (..))
-import           Ouroboros.Consensus.BlockchainTime (SlotLength, slotLengthFromSec)
-import           Ouroboros.Consensus.Cardano (SecurityParam (..))
-import           Ouroboros.Network.Block (BlockNo)
-
-import           Cardano.Api.Byron
+import           Cardano.Api.Byron hiding (Protocol)
 import           Cardano.Api.Shelley hiding (Protocol (..))
 import           Cardano.Chairman (chairmanTest)
 import           Cardano.Node.Configuration.POM (parseNodeConfigurationFP, pncProtocol)

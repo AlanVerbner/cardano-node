@@ -26,7 +26,6 @@ import           Data.Time.Format (defaultTimeLocale, iso8601DateFormat, parseTi
 import           Network.Socket (PortNumber)
 import           Network.URI (URI, parseURI)
 import           Options.Applicative hiding (str)
-import           Ouroboros.Consensus.BlockchainTime (SystemStart (..))
 
 import qualified Cardano.Crypto.Hash as Crypto (Blake2b_256, Hash (..), hashFromBytesAsHex)
 import qualified Data.Attoparsec.ByteString.Char8 as Atto

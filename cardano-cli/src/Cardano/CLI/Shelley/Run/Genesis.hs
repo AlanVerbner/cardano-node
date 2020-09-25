@@ -34,9 +34,6 @@ import qualified Cardano.Crypto.Hash as Crypto
 
 import           Cardano.Api.Shelley
 
-import           Ouroboros.Consensus.BlockchainTime (SystemStart (..))
-import           Ouroboros.Consensus.Shelley.Protocol (StandardShelley)
-
 import qualified Shelley.Spec.Ledger.Address as Ledger
 import qualified Shelley.Spec.Ledger.Coin as Ledger
 import qualified Shelley.Spec.Ledger.Keys as Ledger

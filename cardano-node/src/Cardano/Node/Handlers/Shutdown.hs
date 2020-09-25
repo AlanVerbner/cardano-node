@@ -30,14 +30,11 @@ import qualified System.IO.Error as IO
 import           System.Posix.Types (Fd (Fd))
 import qualified System.Process as IO (createPipeFd)
 
+import           Cardano.Api.Shelley hiding (getTipPoint)
 import           Cardano.BM.Data.Tracer (TracingVerbosity (..), severityNotice, trTransformer)
 import           Cardano.BM.Trace
-import           Cardano.Slotting.Slot (WithOrigin (..))
 import           Control.Tracer
-import qualified Ouroboros.Consensus.Storage.ChainDB as ChainDB
-import           Ouroboros.Consensus.Util.ResourceRegistry (ResourceRegistry)
-import           Ouroboros.Consensus.Util.STM (onEachChange)
-import           Ouroboros.Network.Block (MaxSlotNo (..), SlotNo, pointSlot)
+import           Ouroboros.Consensus.Storage.ChainDB (getTipPoint)
 
 import           Cardano.Node.Configuration.POM (NodeConfiguration (..))
 
@@ -159,7 +156,7 @@ maybeSpawnOnSlotSyncedShutdownHandler
   -> ShutdownFDs
   -> Trace IO Text
   -> ResourceRegistry IO
-  -> ChainDB.ChainDB IO blk
+  -> ChainDB IO blk
   -> IO ()
 maybeSpawnOnSlotSyncedShutdownHandler nc sfds trace registry chaindb =
   case (ncShutdownOnSlotSynced nc, sfds) of
@@ -174,7 +171,7 @@ maybeSpawnOnSlotSyncedShutdownHandler nc sfds trace registry chaindb =
   spawnSlotLimitTerminator :: SlotNo -> ShutdownDoorbell -> IO ()
   spawnSlotLimitTerminator maxSlot sd =
     void $ onEachChange registry "slotLimitTerminator" identity Nothing
-      (pointSlot <$> ChainDB.getTipPoint chaindb) $
+      (pointSlot <$> getTipPoint chaindb) $
         \case
           Origin -> pure ()
           At cur -> when (cur >= maxSlot) $
