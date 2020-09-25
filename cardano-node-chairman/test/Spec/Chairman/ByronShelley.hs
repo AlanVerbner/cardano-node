@@ -3,7 +3,7 @@
 
 {-# OPTIONS_GHC -Wno-unused-imports -Wno-unused-local-binds -Wno-unused-matches #-}
 
-module Spec.Cardano.Node.Chairman.ByronShelley
+module Spec.Chairman.ByronShelley
   ( hprop_chairman
   ) where
 
