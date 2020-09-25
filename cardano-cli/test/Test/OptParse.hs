@@ -8,8 +8,9 @@ module Test.OptParse
   , noteTempFile
   ) where
 
-import           Cardano.Api.TextView (TextView (..), TextViewError, TextViewType (..))
-import           Cardano.Api.Typed (FileError, displayError, readTextEnvelopeOfTypeFromFile)
+import           Cardano.API
+import           Cardano.Api.Shelley
+
 import           Cardano.Prelude hiding (lines, readFile, stderr, stdout)
 import           Control.Monad.Catch
 import           Hedgehog.Internal.Property (Diff, MonadTest, liftTest, mkTest)

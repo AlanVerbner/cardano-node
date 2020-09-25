@@ -14,13 +14,11 @@ module Cardano.CLI.Shelley.Parsers
 import           Cardano.Prelude hiding (All, Any, option)
 import           Prelude (String)
 
-import           Cardano.Api.MetaData
-import           Cardano.Api.Protocol (Protocol (..))
-import           Cardano.Api.Typed hiding (PoolId)
+import           Cardano.Api.Shelley
+
 import           Cardano.Chain.Slotting (EpochSlots (..))
 import           Cardano.CLI.Shelley.Commands
 import           Cardano.CLI.Types
-import           Cardano.Slotting.Slot (EpochNo (..), SlotNo (..))
 import           Control.Monad.Fail (fail)
 import           Data.Attoparsec.Combinator ((<?>))
 import           Data.Time.Clock (UTCTime)

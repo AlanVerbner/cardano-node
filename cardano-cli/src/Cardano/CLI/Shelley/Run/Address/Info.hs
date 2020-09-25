@@ -4,7 +4,7 @@ module Cardano.CLI.Shelley.Run.Address.Info
   , ShelleyAddressInfoError(..)
   ) where
 
-import           Cardano.Api.Typed
+import           Cardano.Api.Shelley
 import           Cardano.CLI.Shelley.Parsers (OutputFile (..))
 import           Cardano.Prelude
 import           Control.Monad.Trans.Except (ExceptT)

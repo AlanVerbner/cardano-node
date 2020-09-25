@@ -11,8 +11,7 @@ import qualified Data.Text as Text
 import           Control.Monad.Trans.Except (ExceptT)
 import           Control.Monad.Trans.Except.Extra (firstExceptT, left, newExceptT, right)
 
-import           Cardano.Api.TextView (TextViewDescription (..), textShow)
-import           Cardano.Api.Typed
+import           Cardano.Api.Shelley
 
 import           Cardano.CLI.Shelley.Commands (VerificationKeyOrHashOrFile (..))
 import           Cardano.CLI.Shelley.Parsers

@@ -19,20 +19,11 @@ import qualified Data.ByteString.Lazy as LB
 import qualified Data.Map.Strict as M
 
 import qualified Cardano.Binary as Binary
-import           Cardano.Chain.Common (LovelacePortion, TxFeePolicy (..))
-import           Cardano.Chain.Slotting (EpochNumber (..), SlotNumber (..))
-import           Cardano.Chain.Update (AProposal (..), InstallerHash (..), Proposal,
-                     ProposalBody (..), ProtocolParametersUpdate (..), ProtocolVersion (..),
-                     SoftforkRule (..), SoftwareVersion (..), SystemTag (..), recoverUpId,
-                     signProposal)
-import           Cardano.CLI.Helpers (HelpersError, ensureNewFileLBS, renderHelpersError, textShow)
+import           Cardano.CLI.Helpers (HelpersError, ensureNewFileLBS, renderHelpersError)
 import           Cardano.Crypto.Signing (SigningKey, noPassSafeSigner)
-import           Ouroboros.Consensus.Byron.Ledger.Block (ByronBlock)
-import qualified Ouroboros.Consensus.Byron.Ledger.Mempool as Mempool
-import           Ouroboros.Consensus.Ledger.SupportsMempool (txId)
-import           Ouroboros.Consensus.Util.Condense (condense)
 
-import           Cardano.Api.Typed (NetworkId, toByronProtocolMagicId)
+import           Cardano.API hiding (SigningKey)
+import           Cardano.Api.Byron
 import           Cardano.CLI.Byron.Genesis (ByronGenesisError)
 import           Cardano.CLI.Byron.Key (ByronKeyFailure, CardanoEra (..), readEraSigningKey)
 import           Cardano.CLI.Byron.Tx (ByronTxError, nodeSubmitTx)
@@ -125,8 +116,8 @@ createProtocolParametersUpdate = go
            TxFeePolicy val -> go i{ppuTxFeePolicy = Just val} rest
            UnlockStakeEpoch val -> go i{ppuUnlockStakeEpoch = Just val} rest
 
-convertProposalToGenTx :: AProposal ByteString -> Mempool.GenTx ByronBlock
-convertProposalToGenTx prop = Mempool.ByronUpdateProposal (recoverUpId prop) prop
+convertProposalToGenTx :: AProposal ByteString -> GenTx ByronBlock
+convertProposalToGenTx prop = ByronUpdateProposal (recoverUpId prop) prop
 
 createUpdateProposal
   :: NetworkId

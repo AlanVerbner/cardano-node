@@ -16,18 +16,18 @@ module Cardano.Tracing.Metrics
   , HasKESMetricsData (..)
   ) where
 
-import           Cardano.Prelude hiding (All, (:.:))
+import           Cardano.Prelude hiding ((:.:), All)
 
+import           Cardano.Api.Byron
 import           Cardano.Crypto.KES.Class (Period)
-import           Data.SOP.Strict (All, (:.:)(..), hcmap, K (..), hcollapse)
+import           Data.SOP.Strict ((:.:) (..), All, K (..), hcmap, hcollapse)
 import           Ouroboros.Consensus.Block (ForgeStateInfo)
-import           Ouroboros.Consensus.Byron.Ledger.Block (ByronBlock)
 import           Ouroboros.Consensus.HardFork.Combinator
-import           Ouroboros.Consensus.TypeFamilyWrappers (WrapForgeStateInfo (..))
 import           Ouroboros.Consensus.HardFork.Combinator.AcrossEras (PerEraForgeStateInfo (..))
 import           Ouroboros.Consensus.Shelley.Ledger.Block (ShelleyBlock)
 import           Ouroboros.Consensus.Shelley.Node ()
 import qualified Ouroboros.Consensus.Shelley.Protocol.HotKey as HotKey
+import           Ouroboros.Consensus.TypeFamilyWrappers (WrapForgeStateInfo (..))
 import qualified Ouroboros.Consensus.Util.OptNP as OptNP
 import           Shelley.Spec.Ledger.OCert (KESPeriod (..))
 

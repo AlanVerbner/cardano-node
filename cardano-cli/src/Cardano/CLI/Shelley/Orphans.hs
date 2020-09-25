@@ -12,7 +12,7 @@
 
 module Cardano.CLI.Shelley.Orphans () where
 
-import           Cardano.Prelude
+import           Cardano.Prelude hiding (Ptr)
 
 import           Control.Iterate.SetAlgebra as SetAlgebra
 import           Data.Aeson
@@ -23,29 +23,14 @@ import qualified Data.ByteString.Short as SBS
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text
 
-import           Cardano.Crypto.Hash.Class as Crypto
+import           Cardano.Crypto.Hash.Class (Hash (..))
+import qualified Cardano.Crypto.Hash.Class as Crypto
 
-import           Ouroboros.Consensus.Byron.Ledger.Block (ByronHash (..))
-import           Ouroboros.Consensus.HardFork.Combinator (OneEraHash (..))
-import           Ouroboros.Consensus.Shelley.Ledger.Block (ShelleyHash (..))
-import           Ouroboros.Consensus.Shelley.Protocol.Crypto (StandardShelley)
-import           Ouroboros.Network.Block (BlockNo (..), HeaderHash, Tip (..))
+import           Cardano.API hiding (Hash, TxId, TxIn, TxOut)
+import           Cardano.Api.Shelley hiding (Hash, TxId, TxIn, TxOut)
 
-import           Cardano.Ledger.Era (Era)
-
-import           Shelley.Spec.Ledger.BaseTypes (StrictMaybe)
-import           Shelley.Spec.Ledger.BlockChain (HashHeader (..))
-import qualified Shelley.Spec.Ledger.Credential as Ledger
-import qualified Shelley.Spec.Ledger.Delegation.Certificates as Ledger
-import qualified Shelley.Spec.Ledger.EpochBoundary as Ledger
-import qualified Shelley.Spec.Ledger.Keys as Ledger
-import qualified Shelley.Spec.Ledger.LedgerState as Ledger
-import           Shelley.Spec.Ledger.MetaData (MetaDataHash (..))
-import           Shelley.Spec.Ledger.PParams (PParams' (..))
-import qualified Shelley.Spec.Ledger.PParams as Ledger
-import qualified Shelley.Spec.Ledger.Rewards as Ledger
-import           Shelley.Spec.Ledger.TxBody (TxId (..), TxIn (..), TxOut (..))
-import           Shelley.Spec.Ledger.UTxO (UTxO (..))
+import           Shelley.Spec.Ledger.TxBody (TxId (TxId), TxIn (TxIn), TxOut (TxOut))
+-- Shelley.Spec.Ledger.TxBody conflicts with typed api
 
 instance Era era => ToJSONKey (TxIn era) where
   toJSONKey = ToJSONKeyText txInToText (Aeson.text . txInToText)
@@ -75,7 +60,6 @@ instance ToJSON (OneEraHash xs) where
          . SBS.fromShort
          . getOneEraHash
 
-deriving newtype instance ToJSON ByronHash
 
 -- This instance is temporarily duplicated in cardano-config
 
@@ -103,34 +87,34 @@ deriving newtype instance ToJSON (ShelleyHash era)
 deriving newtype instance ToJSON (HashHeader era)
 
 deriving newtype instance ToJSON (MetaDataHash era)
-deriving newtype instance ToJSON Ledger.LogWeight
-deriving newtype instance ToJSON Ledger.Likelihood
-deriving newtype instance ToJSON (Ledger.Stake StandardShelley)
+deriving newtype instance ToJSON LogWeight
+deriving newtype instance ToJSON Likelihood
+deriving newtype instance ToJSON (Stake StandardShelley)
 
-deriving anyclass instance ToJSON (Ledger.GenDelegs StandardShelley)
-deriving anyclass instance ToJSON (Ledger.IndividualPoolStake StandardShelley)
-deriving anyclass instance ToJSON (Ledger.ProposedPPUpdates StandardShelley)
-deriving anyclass instance ToJSON (Ledger.PPUPState StandardShelley)
+deriving anyclass instance ToJSON (GenDelegs StandardShelley)
+deriving anyclass instance ToJSON (IndividualPoolStake StandardShelley)
+deriving anyclass instance ToJSON (ProposedPPUpdates StandardShelley)
+deriving anyclass instance ToJSON (PPUPState StandardShelley)
 
-deriving instance ToJSON Ledger.Ptr
-deriving instance ToJSON Ledger.AccountState
+deriving instance ToJSON Ptr
+deriving instance ToJSON AccountState
 
-deriving instance ToJSON (Ledger.DPState StandardShelley)
-deriving instance ToJSON (Ledger.DState StandardShelley)
-deriving instance ToJSON (Ledger.FutureGenDeleg StandardShelley)
-deriving instance ToJSON (Ledger.InstantaneousRewards StandardShelley)
-deriving instance ToJSON (Ledger.SnapShot StandardShelley)
-deriving instance ToJSON (Ledger.SnapShots StandardShelley)
-deriving instance ToJSON (Ledger.NonMyopic StandardShelley)
-deriving instance ToJSON (Ledger.LedgerState StandardShelley)
-deriving instance ToJSON (Ledger.EpochState StandardShelley)
-deriving instance ToJSON (Ledger.PParams' StrictMaybe StandardShelley)
-deriving instance ToJSON (Ledger.PState StandardShelley)
-deriving instance ToJSON (Ledger.StakeReference StandardShelley)
-deriving instance ToJSON (Ledger.UTxOState StandardShelley)
+deriving instance ToJSON (DPState StandardShelley)
+deriving instance ToJSON (DState StandardShelley)
+deriving instance ToJSON (FutureGenDeleg StandardShelley)
+deriving instance ToJSON (InstantaneousRewards StandardShelley)
+deriving instance ToJSON (SnapShot StandardShelley)
+deriving instance ToJSON (SnapShots StandardShelley)
+deriving instance ToJSON (NonMyopic StandardShelley)
+deriving instance ToJSON (LedgerState StandardShelley)
+deriving instance ToJSON (EpochState StandardShelley)
+deriving instance ToJSON (PParams' StrictMaybe StandardShelley)
+deriving instance ToJSON (PState StandardShelley)
+deriving instance ToJSON (StakeReference StandardShelley)
+deriving instance ToJSON (UTxOState StandardShelley)
 
-deriving instance ToJSONKey Ledger.Ptr
-deriving instance ToJSONKey (Ledger.FutureGenDeleg StandardShelley)
+deriving instance ToJSONKey Ptr
+deriving instance ToJSONKey (FutureGenDeleg StandardShelley)
 
 instance (ToJSONKey k, ToJSON v) => ToJSON (SetAlgebra.BiMap v k v) where
   toJSON = toJSON . SetAlgebra.forwards -- to normal Map

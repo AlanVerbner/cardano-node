@@ -16,8 +16,7 @@ import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text
 import qualified Data.Text.IO as Text
 
-import           Cardano.Api.TextView (TextViewError (..))
-import           Cardano.Api.Typed
+import           Cardano.Api.Shelley
 
 import           Cardano.CLI.Types
 

@@ -18,8 +18,7 @@ import qualified Data.Text.IO as Text
 import           Control.Monad.Trans.Except (ExceptT)
 import           Control.Monad.Trans.Except.Extra (firstExceptT, handleIOExceptT, left, newExceptT)
 
-import           Cardano.Api.TextView (TextViewDescription (..))
-import           Cardano.Api.Typed
+import           Cardano.Api.Shelley
 
 import           Cardano.CLI.Shelley.Parsers (AddressCmd (..), AddressKeyType (..), OutputFile (..))
 import           Cardano.CLI.Shelley.Run.Address.Info (ShelleyAddressInfoError, runAddressInfo)

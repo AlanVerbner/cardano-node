@@ -9,11 +9,8 @@ module Cardano.Chairman.Options
   , opts
   ) where
 
-import           Cardano.Api.Protocol.Byron
-import           Cardano.Api.Protocol.Cardano
-import           Cardano.Api.Protocol.Shelley
-import           Cardano.Api.Protocol.Types
-import           Cardano.Api.Typed (NetworkMagic (..))
+import           Cardano.Api.Byron
+import           Cardano.Api.Shelley hiding (Protocol (..))
 import           Cardano.Chain.Slotting (EpochSlots (..))
 import           Cardano.Node.Protocol.Types (Protocol (..))
 import           Cardano.Node.Types

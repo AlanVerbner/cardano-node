@@ -32,12 +32,10 @@ import qualified Cardano.Crypto.Wallet as Crypto
 import qualified Cardano.Crypto.Signing as Byron
 import qualified Shelley.Spec.Ledger.Keys as Shelley
 
-import           Cardano.Api.Shelley.ITN (xprvFromBytes)
-import           Cardano.Api.Typed
+import           Cardano.Api.Shelley
 
 import           Cardano.CLI.Byron.Key (CardanoEra (..))
 import qualified Cardano.CLI.Byron.Key as Byron
-import           Cardano.CLI.Helpers (textShow)
 import           Cardano.CLI.Shelley.Commands
 import           Cardano.CLI.Shelley.Key (SigningKeyDecodeError (..), readSigningKeyFileAnyOf)
 import           Cardano.CLI.Types (SigningKeyFile (..), VerificationKeyFile (..))

@@ -44,14 +44,8 @@ import           Cardano.Crypto (ProtocolMagicId, SigningKey (..))
 import qualified Cardano.Crypto.Hashing as Crypto
 import qualified Cardano.Crypto.Signing as Crypto
 
-import           Ouroboros.Consensus.Byron.Ledger (ByronBlock, GenTx (..))
-import qualified Ouroboros.Consensus.Byron.Ledger as Byron
-import           Ouroboros.Consensus.HardFork.Combinator.Degenerate (GenTx (DegenGenTx))
-
-import           Cardano.Api.Typed (LocalNodeConnectInfo (..), NetworkId, NodeConsensusMode (..),
-                     submitTxToNodeLocal, toByronProtocolMagicId)
+import           Cardano.Api.Byron
 import           Cardano.CLI.Environment
-import           Cardano.CLI.Helpers (textShow)
 import           Cardano.CLI.Types (SocketPath (..))
 
 data ByronTxError
@@ -93,7 +87,7 @@ readByronTx (TxFile fp) = do
 -- | The 'GenTx' is all the kinds of transactions that can be submitted
 -- and \"normal\" Byron transactions are just one of the kinds.
 normalByronTxToGenTx :: UTxO.ATxAux ByteString -> GenTx ByronBlock
-normalByronTxToGenTx tx' = Byron.ByronTx (Byron.byronIdTx tx') tx'
+normalByronTxToGenTx tx' = ByronTx (byronIdTx tx') tx'
 
 -- | Given a Tx id, produce a UTxO Tx input witness, by signing it
 --   with respect to a given protocol magic.

@@ -34,9 +34,7 @@ import           Numeric (showEFloat)
 import           Control.Monad.Trans.Except (ExceptT)
 import           Control.Monad.Trans.Except.Extra (firstExceptT, handleIOExceptT, newExceptT)
 
-import           Cardano.Api.LocalChainSync (getLocalTip)
-import           Cardano.Api.Protocol
-import           Cardano.Api.Typed
+import           Cardano.Api.Shelley
 
 import           Cardano.CLI.Environment (EnvSocketError, readEnvSocketPath, renderEnvSocketError)
 import           Cardano.CLI.Helpers (HelpersError, pPrintCBOR, renderHelpersError)

@@ -17,11 +17,8 @@ import           Ouroboros.Consensus.BlockchainTime (SlotLength, slotLengthFromS
 import           Ouroboros.Consensus.Cardano (SecurityParam (..))
 import           Ouroboros.Network.Block (BlockNo)
 
-import           Cardano.Api.Protocol.Byron
-import           Cardano.Api.Protocol.Cardano
-import           Cardano.Api.Protocol.Shelley
-import           Cardano.Api.Protocol.Types
-import           Cardano.Api.Typed (NetworkMagic (..))
+import           Cardano.Api.Byron
+import           Cardano.Api.Shelley hiding (Protocol (..))
 import           Cardano.Chairman (chairmanTest)
 import           Cardano.Node.Configuration.POM (parseNodeConfigurationFP, pncProtocol)
 import           Cardano.Node.Protocol.Types (Protocol (..))

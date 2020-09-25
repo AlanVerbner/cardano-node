@@ -4,8 +4,7 @@ module Cardano.CLI.Shelley.Run.Node
   , runNodeCmd
   ) where
 
-import           Cardano.Api.TextView (TextViewDescription (..))
-import           Cardano.Api.Typed
+import           Cardano.Api.Shelley
 import           Cardano.CLI.Shelley.Commands
 import           Cardano.CLI.Shelley.Key (SigningKeyDecodeError (..), readSigningKeyFileAnyOf)
 import           Cardano.CLI.Types (SigningKeyFile (..), VerificationKeyFile (..))

@@ -15,10 +15,7 @@ import           Control.Monad.Trans.Except.Extra (firstExceptT, handleIOExceptT
 
 import qualified Data.ByteString.Char8 as BS
 
-import           Cardano.Api.TextView (TextViewDescription (..))
-import           Cardano.Api.Typed
-
-import qualified Shelley.Spec.Ledger.Slot as Shelley
+import           Cardano.Api.Shelley
 
 import           Cardano.CLI.Shelley.Commands
 import           Cardano.CLI.Types (OutputFormat (..), VerificationKeyFile (..))
@@ -144,7 +141,7 @@ runStakePoolRegistrationCert
 
 runStakePoolRetirementCert
   :: VerificationKeyFile
-  -> Shelley.EpochNo
+  -> EpochNo
   -> OutputFile
   -> ExceptT ShelleyPoolCmdError IO ()
 runStakePoolRetirementCert (VerificationKeyFile sPvkeyFp) retireEpoch (OutputFile outfp) = do

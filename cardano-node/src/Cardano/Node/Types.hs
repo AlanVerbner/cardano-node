@@ -33,7 +33,7 @@ import           Data.IP (IP)
 import qualified Data.Text as Text
 import           Network.Socket (PortNumber)
 
-import           Cardano.Api.Typed (EpochNo)
+import           Cardano.API (EpochNo)
 import qualified Cardano.Chain.Update as Byron
 import           Cardano.Crypto (RequiresNetworkMagic (..))
 import qualified Cardano.Crypto.Hash as Crypto

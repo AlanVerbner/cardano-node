@@ -33,28 +33,10 @@ import           Control.Tracer
 
 import           Network.Mux (MuxError, MuxMode (..))
 
-import           Cardano.Api.Protocol.Types (SomeNodeClientProtocol (..))
-import           Ouroboros.Consensus.Block (BlockProtocol, CodecConfig, GetHeader (..), Header)
-import           Ouroboros.Consensus.BlockchainTime (SlotLength, getSlotLength)
-import           Ouroboros.Consensus.Cardano
-import           Ouroboros.Consensus.Ledger.SupportsMempool (ApplyTxErr, GenTx)
-import           Ouroboros.Consensus.Network.NodeToClient
-import           Ouroboros.Consensus.Node.NetworkProtocolVersion (HasNetworkProtocolVersion (..),
-                     supportedNodeToClientVersions)
-import           Ouroboros.Consensus.Node.ProtocolInfo (pClientInfoCodecConfig)
-import           Ouroboros.Consensus.Node.Run
+import           Cardano.API
+import           Cardano.Api.Shelley
 
-import           Ouroboros.Network.AnchoredFragment (Anchor, AnchoredFragment)
 import qualified Ouroboros.Network.AnchoredFragment as AF
-import           Ouroboros.Network.Block (BlockNo, HasHeader, Point, Tip)
-import qualified Ouroboros.Network.Block as Block
-import           Ouroboros.Network.Magic (NetworkMagic)
-import           Ouroboros.Network.Mux
-import           Ouroboros.Network.NodeToClient
-import           Ouroboros.Network.Point (WithOrigin (..), fromWithOrigin)
-import           Ouroboros.Network.Protocol.ChainSync.Client
-import           Ouroboros.Network.Protocol.ChainSync.Type
-import           Ouroboros.Network.Protocol.LocalTxSubmission.Type
 
 import           Cardano.Node.Types (SocketPath (..))
 
@@ -131,7 +113,7 @@ deriveProgressThreshold _ _ (Just progressThreshold) = progressThreshold
 
 -- If only the progress threshold is not specified, derive it from the running time
 deriveProgressThreshold slotLength runningTime Nothing =
-    Block.BlockNo (floor (runningTime / getSlotLengthDiffTime slotLength) - 2)
+    BlockNo (floor (runningTime / getSlotLengthDiffTime slotLength) - 2)
 
 
 getSlotLengthDiffTime :: SlotLength -> DiffTime
@@ -235,7 +217,7 @@ consensusCondition (SecurityParam securityParam) chains =
       where
         forkLen :: Anchor (Header blk) -> Word64
         forkLen tip =
-          Block.unBlockNo $
+          unBlockNo $
             fromWithOrigin 0 (AF.anchorToBlockNo tip)
           - fromWithOrigin 0 (AF.anchorToBlockNo intersection)
 
@@ -264,7 +246,7 @@ progressCondition :: BlockNo
                   -> ConsensusSuccess blk
                   -> Either (ProgressFailure blk) ProgressSuccess
 progressCondition minBlockNo (ConsensusSuccess _ tips) =
-    case find (\(_,tip) -> Block.getTipBlockNo tip < At minBlockNo) tips of
+    case find (\(_,tip) -> getTipBlockNo tip < At minBlockNo) tips of
       Just (peerid, tip) -> Left (ProgressFailure minBlockNo peerid tip)
       Nothing            -> Right (ProgressSuccess minBlockNo)
 
@@ -429,7 +411,7 @@ chainSyncClient tracer sockPath chainsVar securityParam = ChainSyncClient $ pure
     -- synchronises from the genesis block.  A real implementation should send
     -- a list of points up to a point which is k blocks deep.
     SendMsgFindIntersect
-      [Block.genesisPoint]
+      [genesisPoint]
       ClientStIntersect {
         recvMsgIntersectFound    = \_ _ -> ChainSyncClient (pure clientStIdle),
         recvMsgIntersectNotFound = \  _ -> ChainSyncClient (pure clientStIdle)

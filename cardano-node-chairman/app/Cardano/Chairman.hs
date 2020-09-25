@@ -11,9 +11,12 @@
 
 module Cardano.Chairman (chairmanTest) where
 
-import           Cardano.Api.Protocol.Types (SomeNodeClientProtocol (..))
-import           Cardano.Node.Types (SocketPath (..))
 import           Cardano.Prelude hiding (ByteString, STM, atomically, catch, option, show)
+
+import           Cardano.API
+import           Cardano.Api.Shelley
+
+import           Cardano.Node.Types (SocketPath (..))
 import           Control.Concurrent.Async (forConcurrently_)
 import           Control.Monad (void)
 import           Control.Monad.Class.MonadAsync
@@ -31,22 +34,14 @@ import           Data.Void (Void)
 import           Network.Mux (MuxError, MuxMode (..))
 import           Ouroboros.Consensus.Block (BlockProtocol, CodecConfig, GetHeader (..), Header)
 import           Ouroboros.Consensus.BlockchainTime (SlotLength, getSlotLength)
-import           Ouroboros.Consensus.Cardano
 import           Ouroboros.Consensus.Ledger.SupportsMempool (ApplyTxErr, GenTx)
-import           Ouroboros.Consensus.Network.NodeToClient
 import           Ouroboros.Consensus.Node.NetworkProtocolVersion (HasNetworkProtocolVersion (..),
                      supportedNodeToClientVersions)
 import           Ouroboros.Consensus.Node.ProtocolInfo (pClientInfoCodecConfig)
-import           Ouroboros.Consensus.Node.Run
 import           Ouroboros.Network.AnchoredFragment (Anchor, AnchoredFragment)
 import           Ouroboros.Network.Block (BlockNo, HasHeader, Point, Tip)
 import           Ouroboros.Network.Magic (NetworkMagic)
-import           Ouroboros.Network.Mux
-import           Ouroboros.Network.NodeToClient
 import           Ouroboros.Network.Point (WithOrigin (..), fromWithOrigin)
-import           Ouroboros.Network.Protocol.ChainSync.Client
-import           Ouroboros.Network.Protocol.ChainSync.Type
-import           Ouroboros.Network.Protocol.LocalTxSubmission.Type
 import           Prelude (String, error, show)
 
 import qualified Data.Map.Strict as Map

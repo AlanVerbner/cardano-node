@@ -11,9 +11,7 @@ import qualified Data.Text as Text
 import           Cardano.CLI.Helpers (HelpersError, pPrintCBOR, renderHelpersError)
 import           Cardano.CLI.Shelley.Parsers
 
-import           Cardano.Api.TextView (TextView (..))
-import           Cardano.Api.Typed (Error (..), FileError, TextEnvelopeError,
-                     readTextEnvelopeFromFile)
+import           Cardano.Api.Shelley
 
 import           Control.Monad.Trans.Except (ExceptT)
 import           Control.Monad.Trans.Except.Extra (firstExceptT, newExceptT)

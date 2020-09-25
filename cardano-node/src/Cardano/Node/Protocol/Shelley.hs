@@ -37,8 +37,8 @@ import qualified Cardano.Crypto.Hash.Class as Crypto
 import qualified Ouroboros.Consensus.Cardano as Consensus
 import           Ouroboros.Consensus.Cardano.ShelleyHFC
 
-import           Ouroboros.Consensus.Shelley.Node (MaxMajorProtVer (..), Nonce (..),
-                     ShelleyGenesis, TPraosLeaderCredentials (..))
+import           Ouroboros.Consensus.Shelley.Node (MaxMajorProtVer (..), Nonce (..), ShelleyGenesis,
+                     TPraosLeaderCredentials (..))
 import           Ouroboros.Consensus.Shelley.Protocol (StandardShelley, TPraosCanBeLeader (..))
 
 import           Shelley.Spec.Ledger.Genesis (ValidationErr (..), describeValidationErr,
@@ -46,8 +46,8 @@ import           Shelley.Spec.Ledger.Genesis (ValidationErr (..), describeValida
 import           Shelley.Spec.Ledger.Keys (coerceKeyRole)
 import           Shelley.Spec.Ledger.PParams (ProtVer (..))
 
-import           Cardano.Api.Typed hiding (FileError)
-import qualified Cardano.Api.Typed as Api (FileError)
+import           Cardano.Api.Shelley hiding (FileError (..))
+import qualified Cardano.Api.Shelley as Api
 
 import           Cardano.Node.Types
 
@@ -55,7 +55,6 @@ import           Cardano.Tracing.OrphanInstances.HardFork ()
 import           Cardano.Tracing.OrphanInstances.Shelley ()
 
 import           Cardano.Node.Protocol.Types
-
 
 ------------------------------------------------------------------------------
 -- Shelley protocol

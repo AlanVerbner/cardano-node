@@ -12,9 +12,9 @@ import           Cardano.Prelude hiding (All)
 
 import           Data.SOP.Strict
 
+import           Cardano.Api.Byron
 import qualified Cardano.Crypto.Hash as Crypto
 import qualified Cardano.Crypto.Hashing as Byron.Crypto
-import           Ouroboros.Consensus.Byron.Ledger.Block (ByronBlock)
 import           Ouroboros.Consensus.Byron.Ledger.Mempool (TxId (..))
 import           Ouroboros.Consensus.HardFork.Combinator
 import           Ouroboros.Consensus.Ledger.SupportsMempool (GenTx)

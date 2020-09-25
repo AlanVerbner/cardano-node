@@ -52,7 +52,7 @@ import           Cardano.Chain.Update (ApplicationName (..), InstallerHash (..),
                      checkApplicationName, checkSystemTag)
 import           Cardano.Chain.UTxO (TxId, TxIn (..), TxOut (..))
 
-import qualified Cardano.Api.Typed as Typed
+import qualified Cardano.Api.Byron as Typed
 
 import           Cardano.CLI.Byron.Commands
 import           Cardano.CLI.Byron.Genesis
